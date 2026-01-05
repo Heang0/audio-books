@@ -45,11 +45,12 @@
             <div id="errorMessage" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded"></div>
         </form>
     </div>
-
+    <script src="/assets/js/config.js"></script>
+    <script src="/assets/js/config.js"></script>
     <script>
         class AdminLogin {
             constructor() {
-                this.apiBase = 'http://localhost:5000/api';
+                this.apiBase = window.appConfig.apiBase;
                 this.init();
             }
 

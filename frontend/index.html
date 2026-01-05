@@ -16,6 +16,17 @@
         body { 
             font-family: 'Odor Mean Chey', serif !important; 
         }
+        /* Fix Khmer numbers display */
+/* Fix English numbers */
+.english-numbers,
+.time-display,
+#miniCurrentTime, #miniDuration,
+#fullCurrentTime, #fullDuration,
+.professional-numbers {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+    font-variant-numeric: lining-nums !important;
+    font-feature-settings: "lnum" !important;
+}
         /* Professional English font for logo/brand name only */
         .brand-logo {
             font-family: 'Poppins', 'Montserrat', 'Inter', sans-serif !important;
@@ -934,6 +945,8 @@
     </div>
 
     <!-- JavaScript Files -->
+     <!-- Add this line -->
+<script src="/assets/js/config.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="assets/js/categoriesScroll.js"></script>
     <script src="assets/js/homeArticles.js"></script>

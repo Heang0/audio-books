@@ -1,7 +1,7 @@
 // Homepage Articles Functionality
 class HomeArticles {
     constructor() {
-        this.apiBase = 'http://localhost:5000/api';
+        this.apiBase = window.appConfig.apiBase;
         this.articles = [];
         this.init();
     }

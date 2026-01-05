@@ -324,6 +324,16 @@ body {
 #rewindBtn, #forwardBtn, #playPauseBtn, #miniPlayBtn {
     z-index: 10001 !important;
 }
+/* Fix English numbers */
+.english-numbers,
+.time-display,
+#miniCurrentTime, #miniDuration,
+#fullCurrentTime, #fullDuration,
+.professional-numbers {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
+    font-variant-numeric: lining-nums !important;
+    font-feature-settings: "lnum" !important;
+}
 </style>
 </head>
 <body class="bg-gray-50">
@@ -499,6 +509,8 @@ body {
     
     <!-- Load article.js second -->
     <script src="/assets/js/article.js"></script>
+    <!-- Add this line -->
+<script src="/assets/js/config.js"></script>
 
 <script>
     console.log('📄 ARTICLE PAGE: Starting script execution');

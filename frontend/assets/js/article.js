@@ -1,7 +1,7 @@
 // Article page functionality
 class ArticlePage {
     constructor() {
-        this.apiBase = 'http://localhost:5000/api';
+        this.apiBase = window.appConfig.apiBase;
         this.currentArticleId = null;
         this.init();
     }

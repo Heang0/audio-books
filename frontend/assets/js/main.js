@@ -4,7 +4,7 @@ class AudioArticlesApp {
         this.articles = [];
         this.categories = [];
         this.currentArticle = null;
-        this.apiBase = 'http://localhost:5000/api';
+        this.apiBase = window.appConfig.apiBase;
         
         this.init();
     }
