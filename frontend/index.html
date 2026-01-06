@@ -453,6 +453,95 @@
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
+/* Dropdown styles */
+#categoriesDropdown {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+#categoriesDropdown a {
+    transition: all 0.2s ease;
+}
+
+#categoriesDropdown a:hover {
+    background-color: #fef2f2;
+}
+
+/* Dropdown animation */
+#categoriesDropdown {
+    animation: dropdownFadeIn 0.2s ease-out;
+    transform-origin: top center;
+}
+
+@keyframes dropdownFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Arrow rotation */
+#categoriesDropdownBtn i {
+    transition: transform 0.2s ease;
+}
+
+#categoriesDropdownBtn:hover i {
+    transform: rotate(180deg);
+}
+
+/* Mobile dropdown arrow */
+#mobileCategoriesBtn i {
+    transition: transform 0.2s ease;
+}
+
+#mobileCategoriesDropdown:not(.hidden) + #mobileCategoriesBtn i {
+    transform: rotate(180deg);
+}
+/* Search styles */
+#searchResultsInfo {
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Search loading indicator */
+.search-loading {
+    position: relative;
+    color: transparent !important;
+}
+
+.search-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #dc2626;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    transform: translate(-50%, -50%);
+}
+
+/* No results message */
+.no-results {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+.no-results i {
+    font-size: 3rem;
+    color: #d1d5db;
+    margin-bottom: 1rem;
+}
+
     </style>
 </head>
 <body class="bg-gray-50">
@@ -468,13 +557,30 @@
                     </a>
                 </div>
 
-                <!-- Desktop Navigation -->
-                <div class="hidden md:flex items-center space-x-8">
-                    <a href="#" class="text-gray-600 hover:brand-color transition-colors font-medium" onclick="showPage('home'); return false;">ទំព័រដើម</a>
-                    <a href="#" class="text-gray-600 hover:brand-color transition-colors font-medium" onclick="showPage('categories'); return false;">ប្រភេទ</a>
-                    <a href="#" class="text-gray-600 hover:brand-color transition-colors font-medium" onclick="showPage('about'); return false;">អំពីយើង</a>
-                    <a href="#" class="text-gray-600 hover:brand-color transition-colors font-medium" onclick="showPage('contact'); return false;">ទំនាក់ទំនង</a>
-                </div>
+                        <!-- Desktop Navigation -->
+                    <div class="hidden md:flex items-center space-x-8">
+                        <a href="#" class="text-gray-600 hover:brand-color transition-colors font-medium" onclick="showPage('home'); return false;">ទំព័រដើម</a>
+                        
+                        <!-- Categories Dropdown -->
+                        <div class="relative group">
+                            <button id="categoriesDropdownBtn" class="text-gray-600 hover:brand-color transition-colors font-medium flex items-center space-x-1">
+                                <span>ប្រភេទ</span>
+                                <i class="fas fa-chevron-down text-xs"></i>
+                            </button>
+                            <div id="categoriesDropdown" class="absolute left-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-50 hidden">
+                                <div class="py-2 max-h-60 overflow-y-auto">
+                                    <div id="navbarCategoriesList" class="px-4 py-2 text-gray-500">
+                                        <div class="flex items-center justify-center py-2">
+                                            <div class="loading-spinner mx-auto" style="width: 20px; height: 20px; border-width: 2px;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <a href="#" class="text-gray-600 hover:brand-color transition-colors font-medium" onclick="showPage('about'); return false;">អំពីយើង</a>
+                        <a href="#" class="text-gray-600 hover:brand-color transition-colors font-medium" onclick="showPage('contact'); return false;">ទំនាក់ទំនង</a>
+                    </div>
 
                 <!-- Mobile menu button -->
                 <div class="md:hidden">
@@ -486,23 +592,46 @@
         </nav>
     </header>
     
-    <!-- Mobile Menu - MOVED OUTSIDE HEADER -->
-    <div id="mobileMenu">
-        <div class="p-4 border-b">
-            <div class="flex items-center justify-between">
-                <span class="font-bold text-lg">ម៉ឺនុយ</span>
-                <button id="closeMobileMenu" class="text-gray-600">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        </div>
-        <div class="p-4 space-y-4">
-            <a href="#" class="block text-gray-600 hover:brand-color transition-colors font-medium" onclick="showPage('home'); closeMobileMenu(); return false;">ទំព័រដើម</a>
-            <a href="#" class="block text-gray-600 hover:brand-color transition-colors font-medium" onclick="showPage('categories'); closeMobileMenu(); return false;">ប្រភេទ</a>
-            <a href="#" class="block text-gray-600 hover:brand-color transition-colors font-medium" onclick="showPage('about'); closeMobileMenu(); return false;">អំពីយើង</a>
-            <a href="#" class="block text-gray-600 hover:brand-color transition-colors font-medium" onclick="showPage('contact'); closeMobileMenu(); return false;">ទំនាក់ទំនង</a>
+<!-- Mobile Menu -->
+<div id="mobileMenu">
+    <div class="p-4 border-b">
+        <div class="flex items-center justify-between">
+            <span class="font-bold text-lg">ម៉ឺនុយ</span>
+            <button id="closeMobileMenu" class="text-gray-600">
+                <i class="fas fa-times"></i>
+            </button>
         </div>
     </div>
+    <div class="p-4 space-y-0">
+        <a href="#" class="block py-3 text-gray-600 hover:brand-color transition-colors font-medium border-b border-gray-100"
+           onclick="showPage('home'); closeMobileMenu(); return false;">
+           <i class="fas fa-home mr-3"></i>ទំព័រដើម
+        </a>
+        
+        <!-- Mobile Categories Dropdown -->
+        <div class="border-b border-gray-100">
+            <button id="mobileCategoriesBtn" class="w-full text-left py-3 text-gray-600 hover:brand-color transition-colors font-medium flex justify-between items-center">
+                <span><i class="fas fa-th-large mr-3"></i>ប្រភេទ</span>
+                <i class="fas fa-chevron-down text-xs"></i>
+            </button>
+            <div id="mobileCategoriesDropdown" class="pl-8 hidden">
+                <div id="mobileCategoriesList" class="pb-2">
+                    <!-- Categories will be loaded here -->
+                    <div class="py-2 text-gray-500 text-sm">កំពុងផ្ទុក...</div>
+                </div>
+            </div>
+        </div>
+        
+        <a href="#" class="block py-3 text-gray-600 hover:brand-color transition-colors font-medium border-b border-gray-100"
+           onclick="showPage('about'); closeMobileMenu(); return false;">
+           <i class="fas fa-info-circle mr-3"></i>អំពីយើង
+        </a>
+        <a href="#" class="block py-3 text-gray-600 hover:brand-color transition-colors font-medium"
+           onclick="showPage('contact'); closeMobileMenu(); return false;">
+           <i class="fas fa-phone-alt mr-3"></i>ទំនាក់ទំនង
+        </a>
+    </div>
+</div>
     
     <!-- Mobile Overlay -->
     <div id="mobileOverlay" class="mobile-overlay" onclick="closeMobileMenu()"></div>
@@ -510,27 +639,35 @@
     <!-- ===== HOME PAGE ===== -->
     <div id="home-page" class="page active">
         <!-- Hero Section -->
-        <section class="bg-gradient-to-r from-red-600 to-red-800 text-white py-12 md:py-24">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="text-center">
-                    <h1 class="text-2xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 text-responsive-xl">ស្ដាប់ចំណេះដឹង</h1>
-                    <p class="text-base md:text-xl lg:text-2xl mb-6 md:mb-8 opacity-90 max-w-3xl mx-auto text-responsive-base">
-                        រកឃើញអត្ថបទសម្រាប់ស្ដាប់លើប្រធានបទសំខាន់ៗ នៅពេលដែលអ្នកចង់
-                    </p>
-                    <div class="max-w-2xl mx-auto">
-                        <div class="relative">
-                            <input type="text" 
-                                   id="searchInput"
-                                   placeholder="ស្វែងរកអត្ថបទ, ប្រភេទ, ប្រធានបទ..."
-                                   class="w-full px-4 md:px-6 py-3 md:py-4 rounded-full text-gray-800 focus:outline-none focus:ring-4 focus:ring-red-300 text-sm md:text-base">
-                            <button class="absolute right-2 top-1/2 transform -translate-y-1/2 brand-bg text-white p-2 md:p-3 rounded-full hover:bg-red-700 transition-colors">
-                                <i class="fas fa-search text-sm md:text-base"></i>
-                            </button>
+            <!-- Hero Section - Update the search part -->
+            <section class="bg-gradient-to-r from-red-600 to-red-800 text-white py-12 md:py-24">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="text-center">
+                        <h1 class="text-2xl md:text-5xl lg:text-6xl font-bold mb-4 md:mb-6 text-responsive-xl">ស្ដាប់ចំណេះដឹង</h1>
+                        <p class="text-base md:text-xl lg:text-2xl mb-6 md:mb-8 opacity-90 max-w-3xl mx-auto text-responsive-base">
+                            រកឃើញអត្ថបទសម្រាប់ស្ដាប់លើប្រធានបទសំខាន់ៗ នៅពេលដែលអ្នកចង់
+                        </p>
+                        <div class="max-w-2xl mx-auto">
+                            <div class="relative">
+                                <input type="text" 
+                                    id="searchInput"
+                                    placeholder="ស្វែងរកអត្ថបទ, ប្រភេទ, ប្រធានបទ..."
+                                    class="w-full px-4 md:px-6 py-3 md:py-4 rounded-full text-gray-800 focus:outline-none focus:ring-4 focus:ring-red-300 text-sm md:text-base pr-12">
+                                <button id="searchButton" class="absolute right-2 top-1/2 transform -translate-y-1/2 brand-bg text-white p-2 md:p-3 rounded-full hover:bg-red-700 transition-colors">
+                                    <i class="fas fa-search text-sm md:text-base"></i>
+                                </button>
+                                <button id="clearSearchButton" class="absolute right-12 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 p-2 hidden">
+                                    <i class="fas fa-times text-sm md:text-base"></i>
+                                </button>
+                            </div>
+                            <div id="searchResultsInfo" class="mt-2 text-sm text-red-100 hidden">
+                                រកឃើញ <span id="resultsCount" class="font-bold">0</span> អត្ថបទ
+                                <button id="clearSearchLink" class="ml-2 underline hover:text-white">សម្អាត</button>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
 
         <!-- Categories Section -->
         <section class="py-6 md:py-8 bg-white border-b">
@@ -1022,6 +1159,49 @@
             closeMobileMenu();
         }
 
+        // Test function - add this to your global JavaScript
+function testDropdown() {
+    console.log('🧪 Testing dropdown...');
+    
+    const dropdownBtn = document.getElementById('categoriesDropdownBtn');
+    const dropdown = document.getElementById('categoriesDropdown');
+    
+    console.log('Dropdown button:', dropdownBtn);
+    console.log('Dropdown element:', dropdown);
+    
+    if (dropdownBtn && dropdown) {
+        console.log('✅ Dropdown elements found');
+        
+        // Manually show dropdown
+        dropdown.classList.remove('hidden');
+        console.log('Dropdown should be visible now');
+        
+        // Test with some fake categories
+        const navbarCategoriesList = document.getElementById('navbarCategoriesList');
+        if (navbarCategoriesList) {
+            navbarCategoriesList.innerHTML = `
+                <a href="#" class="block px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors border-b border-gray-100">
+                    <div class="flex justify-between items-center">
+                        <span class="font-medium">បច្ចេកវិទ្យា</span>
+                        <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">5</span>
+                    </div>
+                </a>
+                <a href="#" class="block px-4 py-3 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition-colors">
+                    <div class="flex justify-between items-center">
+                        <span class="font-medium">សុខភាព</span>
+                        <span class="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-full">3</span>
+                    </div>
+                </a>
+            `;
+            console.log('✅ Test categories added to dropdown');
+        }
+    } else {
+        console.error('❌ Dropdown elements not found');
+    }
+}
+
+// Call this function from browser console to test
+window.testDropdown = testDropdown;
         // Event Listeners - FIXED
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 DOM fully loaded');
@@ -1073,27 +1253,77 @@
             }
         });
 
-        // ===== SEARCH FUNCTIONALITY =====
-        document.addEventListener('DOMContentLoaded', function() {
-            const searchInput = document.getElementById('searchInput');
-            const searchButton = document.querySelector('#searchInput + button');
+                // In the <script> section of index.html, update the search functionality:
 
-            if (searchInput && searchButton) {
-                searchButton.addEventListener('click', performSearch);
-                searchInput.addEventListener('keypress', function(e) {
-                    if (e.key === 'Enter') {
-                        performSearch();
-                    }
-                });
-            }
-
-            function performSearch() {
-                const query = searchInput.value.trim();
-                if (query) {
-                    alert('Search functionality for: ' + query);
-                }
+// ===== ENHANCED SEARCH FUNCTIONALITY =====
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const searchButton = document.getElementById('searchButton');
+    const clearSearchButton = document.getElementById('clearSearchButton');
+    const clearSearchLink = document.getElementById('clearSearchLink');
+    
+    function performSearch() {
+        const query = searchInput.value.trim();
+        if (window.audioArticlesApp && window.audioArticlesApp.searchArticles) {
+            window.audioArticlesApp.searchArticles(query);
+        }
+    }
+    
+    function clearSearch() {
+        if (searchInput) searchInput.value = '';
+        if (clearSearchButton) clearSearchButton.classList.add('hidden');
+        
+        if (window.audioArticlesApp && window.audioArticlesApp.clearSearch) {
+            window.audioArticlesApp.clearSearch();
+        }
+    }
+    
+    // Event listeners
+    if (searchButton) {
+        searchButton.addEventListener('click', performSearch);
+    }
+    
+    if (searchInput) {
+        // Search on Enter
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
             }
         });
+        
+        // Real-time search with debounce
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            // Show/hide clear button
+            if (clearSearchButton) {
+                if (this.value.trim()) {
+                    clearSearchButton.classList.remove('hidden');
+                } else {
+                    clearSearchButton.classList.add('hidden');
+                }
+            }
+            
+            // Debounce search
+            clearTimeout(searchTimeout);
+            if (this.value.trim().length >= 2) {
+                searchTimeout = setTimeout(performSearch, 500);
+            } else if (this.value.trim().length === 0) {
+                clearSearch();
+            }
+        });
+    }
+    
+    if (clearSearchButton) {
+        clearSearchButton.addEventListener('click', clearSearch);
+    }
+    
+    if (clearSearchLink) {
+        clearSearchLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            clearSearch();
+        });
+    }
+});
 
         // Device detection for audio optimization
         window.deviceInfo = {
@@ -1133,6 +1363,13 @@
             
             return url;
         };
+        // Helper function to close dropdowns
+function closeDropdown(dropdownId) {
+    const dropdown = document.getElementById(dropdownId + 'Dropdown');
+    if (dropdown) {
+        dropdown.classList.add('hidden');
+    }
+}
 
         // Handle page visibility changes
         document.addEventListener('visibilitychange', () => {

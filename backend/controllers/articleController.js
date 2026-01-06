@@ -52,6 +52,36 @@ exports.getArticle = async (req, res) => {
   }
 };
 
+exports.searchArticles = async (req, res) => {
+    try {
+        const { q } = req.query;
+        
+        let searchQuery = { published: true };
+        
+        // Only add search filters if there's a query
+        if (q && q.trim() !== '') {
+            searchQuery = {
+                $or: [
+                    { title: { $regex: q, $options: 'i' } },
+                    { description: { $regex: q, $options: 'i' } },
+                    { category: { $regex: q, $options: 'i' } }
+                ],
+                published: true
+            };
+        }
+        // If q is empty, searchQuery stays as { published: true }
+        // This will return ALL published articles
+        
+        const articles = await Article.find(searchQuery)
+            .sort({ createdAt: -1 })
+            .limit(50);
+        
+        res.json({ articles });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 // Create article with Cloudinary uploads and dynamic duration
 exports.createArticle = async (req, res) => {
   try {

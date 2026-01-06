@@ -5,6 +5,7 @@ const { upload } = require('../middleware/upload');
 
 // Existing routes
 router.get('/', articleController.getArticles);
+router.get('/search', articleController.searchArticles); // ADD THIS LINE
 router.get('/:id', articleController.getArticle);
 router.post('/', upload, articleController.createArticle);
 router.put('/:id', upload, articleController.updateArticle);
