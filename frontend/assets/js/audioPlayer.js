@@ -87,11 +87,16 @@ class AudioPlayer {
             this.updateProgressBar();
         });
 
-        this.audio.addEventListener('timeupdate', () => {
-            this.currentTime = this.audio.currentTime;
-            this.updateProgressBar();
-            this.updateTimeDisplay();
-        });
+this.audio.addEventListener('timeupdate', () => {
+    this.currentTime = this.audio.currentTime;
+    this.updateProgressBar();
+    this.updateTimeDisplay();
+    
+    // Update media session position every 2 seconds
+    if (Math.floor(this.currentTime) % 2 === 0) {
+        this.updateMediaSession();
+    }
+});
 
         this.audio.addEventListener('ended', () => {
             console.log('⏹️ Audio ended');
@@ -359,6 +364,109 @@ class AudioPlayer {
         }
     }
 
+    setupMediaSession() {
+    if ('mediaSession' in navigator) {
+        console.log('📱 Media Session API supported');
+        
+        try {
+            // Use a fallback thumbnail if the current one fails
+            const thumbnailUrl = this.currentArticle?.thumbnailUrl || '/assets/images/logo.png';
+            
+            // Set media session metadata
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: this.currentArticle?.title || 'Audio Article',
+                artist: this.currentArticle?.category || 'Audio Articles',
+                album: 'Audio Articles Platform',
+                artwork: [
+                    { src: thumbnailUrl, sizes: '96x96', type: 'image/jpeg' },
+                    { src: thumbnailUrl, sizes: '128x128', type: 'image/jpeg' },
+                    { src: thumbnailUrl, sizes: '192x192', type: 'image/jpeg' },
+                    { src: thumbnailUrl, sizes: '256x256', type: 'image/jpeg' },
+                    { src: thumbnailUrl, sizes: '384x384', type: 'image/jpeg' },
+                    { src: thumbnailUrl, sizes: '512x512', type: 'image/jpeg' }
+                ]
+            });
+            
+            // Set action handlers
+            navigator.mediaSession.setActionHandler('play', () => {
+                console.log('📱 Media Session: Play requested');
+                this.play();
+            });
+            
+            navigator.mediaSession.setActionHandler('pause', () => {
+                console.log('📱 Media Session: Pause requested');
+                this.pause();
+            });
+            
+            navigator.mediaSession.setActionHandler('seekbackward', () => {
+                console.log('📱 Media Session: Seek backward');
+                this.skip(-10);
+            });
+            
+            navigator.mediaSession.setActionHandler('seekforward', () => {
+                console.log('📱 Media Session: Seek forward');
+                this.skip(30);
+            });
+            
+            // Optional handlers for next/previous
+            try {
+                navigator.mediaSession.setActionHandler('previoustrack', () => {
+                    console.log('📱 Media Session: Previous track');
+                    // You can implement previous article here
+                });
+                
+                navigator.mediaSession.setActionHandler('nexttrack', () => {
+                    console.log('📱 Media Session: Next track');
+                    // You can implement next article here
+                });
+            } catch (error) {
+                console.log('⚠️ Next/Previous not supported');
+            }
+            
+            // Update playback state
+            navigator.mediaSession.playbackState = this.isPlaying ? 'playing' : 'paused';
+            
+        } catch (error) {
+            console.error('❌ Media Session setup error:', error);
+        }
+    } else {
+        console.log('⚠️ Media Session API not supported');
+    }
+}
+// Add this method to update media session
+updateMediaSession() {
+    if ('mediaSession' in navigator) {
+        // Update metadata if article changed
+        if (this.currentArticle) {
+            navigator.mediaSession.metadata = new MediaMetadata({
+                title: this.currentArticle.title,
+                artist: this.currentArticle.category,
+                album: 'Audio Articles Platform',
+                artwork: [
+                    { src: this.currentArticle.thumbnailUrl, sizes: '96x96', type: 'image/jpeg' },
+                    { src: this.currentArticle.thumbnailUrl, sizes: '128x128', type: 'image/jpeg' },
+                    { src: this.currentArticle.thumbnailUrl, sizes: '192x192', type: 'image/jpeg' },
+                    { src: this.currentArticle.thumbnailUrl, sizes: '256x256', type: 'image/jpeg' },
+                    { src: this.currentArticle.thumbnailUrl, sizes: '384x384', type: 'image/jpeg' },
+                    { src: this.currentArticle.thumbnailUrl, sizes: '512x512', type: 'image/jpeg' }
+                ]
+            });
+        }
+        
+        // Update playback state
+        navigator.mediaSession.playbackState = this.isPlaying ? 'playing' : 'paused';
+        
+        // Update position state
+        if (this.duration > 0) {
+            navigator.mediaSession.setPositionState({
+                duration: this.duration,
+                playbackRate: this.playbackRate,
+                position: this.currentTime
+            });
+        }
+    }
+}
+
     configureAudioForFastLoading() {
         if (this.deviceInfo.isIOS) {
             this.audio.preload = 'none';
@@ -442,6 +550,8 @@ class AudioPlayer {
             }, 5000);
             
             console.log('✅ Audio source set, waiting for metadata...');
+
+             setTimeout(() => this.setupMediaSession(), 1000);
             
         } catch (error) {
             console.error('❌ Error loading audio:', error);
@@ -449,44 +559,52 @@ class AudioPlayer {
         }
     }
 
-    // PLAYBACK CONTROLS
-    async play() {
-        try {
-            console.log('▶️ Attempting to play audio');
-            
-            if (this.deviceInfo.isIOS && this.audio.currentTime === 0) {
-                await this.audio.load();
-            }
-            
-            await this.audio.play();
-            this.isPlaying = true;
-            this.updatePlayButton();
-            console.log('✅ Audio playing successfully');
-            
-            this.trackPlay();
-            
-        } catch (error) {
-            console.error('❌ Error playing audio:', error);
-            
-            if (this.deviceInfo.isIOS && error.name === 'NotAllowedError') {
-                this.showIOSPlaybackHint();
-            }
-            
-            // Try clean URL if format error
-            if (error.message.includes('format') || error.message.includes('not supported')) {
-                console.log('🔄 Format error, trying clean URL...');
-                this.useCleanCloudinaryUrl();
-            }
+async play() {
+    try {
+        console.log('▶️ Attempting to play audio');
+        
+        // Setup media session for iOS/Android
+        if ('mediaSession' in navigator) {
+            this.setupMediaSession();
+        }
+        
+        await this.audio.play();
+        this.isPlaying = true;
+        this.updatePlayButton();
+        
+        // Update media session state
+        this.updateMediaSession();
+        
+        console.log('✅ Audio playing successfully');
+        this.trackPlay();
+        
+    } catch (error) {
+        console.error('❌ Error playing audio:', error);
+        
+        if (this.deviceInfo.isIOS && error.name === 'NotAllowedError') {
+            this.showIOSPlaybackHint();
+        }
+        
+        // Try clean URL if format error
+        if (error.message.includes('format') || error.message.includes('not supported')) {
+            console.log('🔄 Format error, trying clean URL...');
+            this.useCleanCloudinaryUrl();
         }
     }
+}
 
-    pause() {
-        console.log('⏸️ Pausing audio');
-        this.audio.pause();
-        this.isPlaying = false;
-        this.hideLoading();
-        this.updatePlayButton();
-    }
+pause() {
+    console.log('⏸️ Pausing audio');
+    this.audio.pause();
+    this.isPlaying = false;
+    this.hideLoading();
+    this.updatePlayButton();
+    
+    // ===== ADD THIS LINE HERE =====
+    // Update media session when pausing
+    this.updateMediaSession();
+    // ===== END OF ADDED LINE =====
+}
 
     togglePlay() {
         console.log('🔄 Toggle play, current state:', this.isPlaying);
@@ -509,7 +627,7 @@ class AudioPlayer {
                 console.log('⚠️ Auto-play after seek prevented');
             });
         }
-        
+         this.updateMediaSession();
         this.updateProgressBar();
         this.updateTimeDisplay();
     }
@@ -529,6 +647,8 @@ class AudioPlayer {
         localStorage.setItem('playbackRate', this.playbackRate);
         
         this.updateSpeedButton();
+        this.updateMediaSession();
+
     }
 
     updateSpeedButton() {
