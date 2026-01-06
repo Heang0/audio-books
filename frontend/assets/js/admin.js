@@ -3,24 +3,29 @@ class AdminPanel {
     constructor() {
         this.token = localStorage.getItem('adminToken');
         this.currentUser = null;
-        this.apiBase = window.appConfig.apiBase;
+        
+        // Get API base with fallback
+        if (window.appConfig && window.appConfig.apiBase) {
+            this.apiBase = window.appConfig.apiBase;
+        } else {
+            // Fallback for development
+            this.apiBase = 'http://localhost:5000/api';
+            console.warn('⚠️ appConfig not found, using fallback API:', this.apiBase);
+        }
         
         this.init();
     }
 
-    async init() {
-        await this.checkAuth();
-        if (this.currentUser) {
-            this.setupEventListeners();
-            await this.loadDashboardData();
-            
-            // Load categories if on manage-categories page OR upload page
-            if (window.location.pathname.includes('/manage-categories') || 
-                window.location.pathname.includes('/upload')) {
-                await this.loadCategories();
-            }
-        }
+async init() {
+    await this.checkAuth();
+    if (this.currentUser) {
+        this.setupEventListeners();
+        await this.loadDashboardData();
+        
+        // ALWAYS load categories for all admin pages
+        await this.loadCategories();
     }
+}
 
     async checkAuth() {
         if (!this.token) {
@@ -599,26 +604,37 @@ async updateArticle() {
         }
     }
 
-    async loadCategories() {
-        console.log('Loading categories...');
-        try {
-            const response = await fetch(`${this.apiBase}/categories`);
-            const categories = await response.json();
-            console.log('Categories loaded:', categories);
-            
-            // Render in categories list (manage-categories page)
-            if (window.location.pathname.includes('/manage-categories')) {
-                this.renderCategories(categories);
-            }
-            
-            // Render in dropdown (upload page)
-            if (window.location.pathname.includes('/upload')) {
-                this.renderCategoryDropdown(categories);
-            }
-        } catch (error) {
-            console.error('Error loading categories:', error);
+        async loadCategories() {
+    console.log('Loading categories...');
+    try {
+        const response = await fetch(`${this.apiBase}/categories`);
+        
+        if (!response.ok) {
+            throw new Error(`Failed to load categories: ${response.status}`);
         }
+        
+        const categories = await response.json();
+        console.log('Categories loaded:', categories);
+        
+        // Render in categories list (manage-categories page)
+        if (window.location.pathname.includes('/manage-categories')) {
+            this.renderCategories(categories);
+        }
+        
+        // Render in dropdown (upload page)
+        if (window.location.pathname.includes('/upload')) {
+            this.renderCategoryDropdown(categories);
+        }
+        
+        // Return categories so other methods can use them
+        return categories;
+        
+    } catch (error) {
+        console.error('Error loading categories:', error);
+        // Return empty array to prevent crashes
+        return [];
     }
+}
 
     renderCategories(categories) {
         const categoriesList = document.getElementById('categoriesList');
@@ -821,33 +837,40 @@ async updateArticle() {
         }
     }
 
-    async loadDashboardData() {
-        try {
-            if (!window.location.pathname.includes('/admin')) {
-                return;
-            }
-
-            const [articlesRes, categoriesRes] = await Promise.all([
-                fetch(`${this.apiBase}/articles?limit=100`),
-                fetch(`${this.apiBase}/categories`)
-            ]);
-
-            if (!articlesRes.ok || !categoriesRes.ok) {
-                throw new Error('Failed to fetch data');
-            }
-
-            const articlesData = await articlesRes.json();
-            const categoriesData = await categoriesRes.json();
-
-            this.renderDashboard(articlesData, categoriesData);
-            
-            if (window.location.pathname === '/admin') {
-                this.renderArticlesTable(articlesData.articles);
-            }
-        } catch (error) {
-            console.error('Error loading dashboard data:', error);
+        async loadDashboardData() {
+    try {
+        if (!window.location.pathname.includes('/admin')) {
+            return;
         }
+
+        // Load both articles and categories in parallel
+        const [articlesRes, categoriesRes] = await Promise.all([
+            fetch(`${this.apiBase}/articles?limit=100`),
+            fetch(`${this.apiBase}/categories`)
+        ]);
+
+        if (!articlesRes.ok || !categoriesRes.ok) {
+            throw new Error('Failed to fetch data');
+        }
+
+        const articlesData = await articlesRes.json();
+        const categoriesData = await categoriesRes.json();
+
+        // Update dashboard stats
+        this.renderDashboard(articlesData, categoriesData);
+        
+        // Render articles table
+        if (window.location.pathname === '/admin') {
+            this.renderArticlesTable(articlesData.articles);
+        }
+        
+        // Make categories available globally if needed
+        window.currentCategories = categoriesData;
+        
+    } catch (error) {
+        console.error('Error loading dashboard data:', error);
     }
+}
 
     renderDashboard(articlesData, categoriesData) {
         const totalArticles = articlesData.total || articlesData.articles?.length || 0;
